@@ -23,7 +23,9 @@ jobs:
         java-version: '17' 
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: |
+        ./gradlew clean
+        ./gradlew bootjar
 
     - name: Archive JAR file
       uses: actions/upload-artifact@v3
