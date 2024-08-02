@@ -53,7 +53,7 @@ jobs:
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
-        scp -i private_key ./app.jar $SERVER_USER@$SERVER_HOST:$SERVER_PATH/app.jar
+        scp -i private_key ./app.jar $SERVER_USER@$SERVER_HOST:$SERVER_PATH
 
   deploy_to_was:
     runs-on: ubuntu-latest
@@ -76,7 +76,7 @@ jobs:
         echo "$WEB_SSH_PRIVATE_KEY" > web_private_key
         chmod 600 web_private_key
 
-        ssh -i web_private_key $WEB_SERVER_USER@$WEB_SERVER_HOST "scp -i was_private_key $WEB_SERVER_PATH/app.jar $WAS_SERVER_USER@$WAS_SERVER_HOST:$WAS_SERVER_PATH/app.jar"
+        ssh -i web_private_key $WEB_SERVER_USER@$WEB_SERVER_HOST "scp -i was_private_key $WEB_SERVER_PATH/app.jar $WAS_SERVER_USER@$WAS_SERVER_HOST:$WAS_SERVER_PATH"
         ssh -i was_private_key $WAS_SERVER_USER@$WAS_SERVER_HOST << 'EOF'
           sudo fuser -k 8080/tcp || true
           cd $WAS_SERVER_PATH
