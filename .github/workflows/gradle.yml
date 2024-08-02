@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17' 
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Archive JAR file
+      uses: actions/upload-artifact@v3
+      with:
+        name: springboot-app
+        path: build/libs/*.jar
+
+  deploy_to_web:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download JAR file
+      uses: actions/download-artifact@v3
+      with:
+        name: springboot-app
+        path: ./app.jar
+
+    - name: Deploy to web EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.WEB_SSH_PRIVATE_KEY }}
+        SERVER_USER: ${{ secrets.WEB_SERVER_USER }}
+        SERVER_HOST: ${{ secrets.WEB_SERVER_HOST }}
+        SERVER_PATH: ${{ secrets.WEB_SERVER_PATH }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        scp -i private_key ./app.jar $SERVER_USER@$SERVER_HOST:$SERVER_PATH/app.jar
+
+  deploy_to_was:
+    runs-on: ubuntu-latest
+    needs: deploy_to_web
+
+    steps:
+    - name: Transfer JAR from web to WAS EC2 and run
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.WAS_SSH_PRIVATE_KEY }}
+        WEB_SSH_PRIVATE_KEY: ${{ secrets.WEB_SSH_PRIVATE_KEY }}
+        WEB_SERVER_USER: ${{ secrets.WEB_SERVER_USER }}
+        WEB_SERVER_HOST: ${{ secrets.WEB_SERVER_HOST }}
+        WEB_SERVER_PATH: ${{ secrets.WEB_SERVER_PATH }}
+        WAS_SERVER_USER: ${{ secrets.WAS_SERVER_USER }}
+        WAS_SERVER_HOST: ${{ secrets.WAS_SERVER_HOST }}
+        WAS_SERVER_PATH: ${{ secrets.WAS_SERVER_PATH }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > was_private_key
+        chmod 600 was_private_key
+        echo "$WEB_SSH_PRIVATE_KEY" > web_private_key
+        chmod 600 web_private_key
+
+        ssh -i web_private_key $WEB_SERVER_USER@$WEB_SERVER_HOST "scp -i was_private_key $WEB_SERVER_PATH/app.jar $WAS_SERVER_USER@$WAS_SERVER_HOST:$WAS_SERVER_PATH/app.jar"
+        ssh -i was_private_key $WAS_SERVER_USER@$WAS_SERVER_HOST << 'EOF'
+          sudo fuser -k 8080/tcp || true
+          cd $WAS_SERVER_PATH
+          nohup java -jar app.jar > app.log 2>&1 &
+        EOF
