@@ -23,6 +23,7 @@ jobs:
       run: |
         ./gradlew clean
         ./gradlew bootjar
+        mv build/libs/WishPool-*.jar build/libs/app.jar
 
     - name: Archive JAR file
       uses: actions/upload-artifact@v3
