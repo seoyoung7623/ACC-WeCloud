@@ -59,7 +59,7 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_DEPLOY_PATH: ${{ secrets.EC2_DEPLOY_PATH }}
       run: |
-        scp -i private_key.pem ./app.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH  # EC2로 JAR 파일 복사
+        scp -i private_key.pem ./build/libs/*.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH  # EC2로 JAR 파일 복사
 
     - name: Restart Spring Boot Application
       env:
