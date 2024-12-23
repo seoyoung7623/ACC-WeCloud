@@ -73,8 +73,7 @@ jobs:
         pwd
         ls
         ls -la
-        ls -la ./build/libs/
-        scp -i private_key.pem -o StrictHostKeyChecking=no ./app.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH
+        scp -i private_key.pem -o StrictHostKeyChecking=no app.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH
 
     - name: Restart Spring Boot Application
       env:
