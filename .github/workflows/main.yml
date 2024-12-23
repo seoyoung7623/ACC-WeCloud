@@ -25,8 +25,10 @@ jobs:
         cd ./src/main/resources
         touch ./application.yml
         touch ./application-dev.yml
+        touch ./application-aws.yml
         echo "${{ secrets.APPLICATION }}" > ./application.yml
         echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
+        echo "${{ secrets.APPLICATION_AWS }}" > ./application-aws.yml
       shell: bash
         
 
