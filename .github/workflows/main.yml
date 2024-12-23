@@ -74,7 +74,7 @@ jobs:
         ls
         ls -la app.jar
         # chmod 644 app.jar
-        scp -i private_key.pem -o StrictHostKeyChecking=no ./build/libs/app.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH
+        scp -i private_key.pem -o StrictHostKeyChecking=no ./app.jar/*.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH
 
     - name: Restart Spring Boot Application
       env:
