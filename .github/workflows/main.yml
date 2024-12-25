@@ -72,10 +72,6 @@ jobs:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_DEPLOY_PATH: ${{ secrets.EC2_DEPLOY_PATH }}
       run: |
-        pwd
-        ls
-        ls -la app.jar
-        # chmod 644 app.jar
         scp -i private_key.pem -o StrictHostKeyChecking=no ./app.jar/*.jar $EC2_USER@$EC2_HOST:$EC2_DEPLOY_PATH
 
     - name: Restart Spring Boot Application
@@ -85,6 +81,6 @@ jobs:
         EC2_DEPLOY_PATH: ${{ secrets.EC2_DEPLOY_PATH }}
       run: |
         ssh -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
-        pkill -f 'java -jar app.jar' || true  # 기존 애플리케이션 종료
-        nohup java -jar app.jar > app.log 2>&1 &
+        pkill -f 'java -jar app' || true  # 기존 애플리케이션 종료
+        nohup java -jar app > app.log 2>&1 &
         EOF
